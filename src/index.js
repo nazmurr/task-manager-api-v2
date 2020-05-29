@@ -10,6 +10,13 @@ const port = process.env.PORT
 //     res.status(503).send('site is not available right now')
 // })
 
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*")
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
+    res.header('Access-Control-Allow-Methods', 'POST, PATCH, GET, DELETE, OPTIONS')
+    next()
+})
+
 app.use(express.json())
 app.use(userRouter)
 app.use(taskRouter)

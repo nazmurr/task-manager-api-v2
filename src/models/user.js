@@ -52,13 +52,18 @@ const userSchema = new mongoose.Schema({
         type: Buffer
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    toObject: { virtuals: true }
 })
 
 userSchema.virtual('tasks', {
     ref: 'Task',
     localField: '_id',
     foreignField: 'owner'
+})
+
+userSchema.virtual('hasAvatar').get(function() {
+    return this.avatar ? true: false;
 })
 
 //methods is object instance level
@@ -78,6 +83,7 @@ userSchema.methods.toJSON = function () {
     delete userObject.password
     delete userObject.tokens
     delete userObject.avatar
+    delete userObject.id
 
     return userObject
 }

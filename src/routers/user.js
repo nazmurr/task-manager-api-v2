@@ -11,11 +11,15 @@ router.post('/users', async (req, res) => {
 
     try{
         await user.save()
-        sendWelcomeEmail(user.email, user.name)
+        //sendWelcomeEmail(user.email, user.name)
         const token = await user.generateAuthToken()
         res.status(201).send({ user, token })
 
     } catch(e){
+        if (e.name === 'MongoError' && e.code === 11000) {
+            // Duplicate username
+            return res.status(400).send({ error: 'User already exist!' })
+        }
         res.status(400).send(e)
     }
 
@@ -63,6 +67,7 @@ router.post('/users/logoutAll', auth, async (req, res) => {
 // })
 
 router.get('/users/me', auth, async (req, res) => {
+    //console.log(req.headers);
     res.send(req.user)
 })
 
@@ -92,7 +97,11 @@ router.patch('/users/me', auth, async (req, res) => {
         updates.forEach((update) => req.user[update] = req.body[update])
         await req.user.save()
         res.send(req.user)
-    } catch (e) {
+    } catch(e) {
+        if (e.name === 'MongoError' && e.code === 11000) {
+            // Duplicate username
+            return res.status(400).send({ error: 'User already exist!' })
+        }
         res.status(400).send(e)
     }
 })
@@ -100,7 +109,7 @@ router.patch('/users/me', auth, async (req, res) => {
 router.delete('/users/me', auth, async (req, res) => {
     try {
         await req.user.remove()
-        sendCancellationEmail(req.user.email, req.user.name)
+        //sendCancellationEmail(req.user.email, req.user.name)
         res.send(req.user)
     } catch (e) {
         res.status(500).send() 
